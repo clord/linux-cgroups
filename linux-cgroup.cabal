@@ -12,8 +12,8 @@ category: System
 author: Christopher Lord
 data-dir: ""
 source-repository head
-	type: git
-	location: https://github.com/clord/linux-cgroups
+    type: git
+    location: https://github.com/clord/linux-cgroups
 library
     build-depends: base >=4.6 && <4.7, filepath >=1.3.0.1 && <1.4
     exposed-modules: System.Linux.Process.CGroup.VFS
