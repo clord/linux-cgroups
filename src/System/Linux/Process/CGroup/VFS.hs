@@ -1,6 +1,21 @@
-{-# LANGUAGE OverloadedStrings #-}
--- | Interfaces with the linux cgroup virtual filesystem to fetch various basic data. Note that this is an early iteration of the API, and subject to change.
-module System.Linux.Process.CGroup.VFS(CGroup(..), allCGroups, listTasks, addTask) where
+-------------------------------------
+-- | 
+-- Module      : System.Linux.Process.CGroup.VFS
+-- Copyright   : Christopher Lord 2014
+-- License     : MIT (See LICENSE)
+-- Stability   : experimental
+-- Portability : portable
+--
+-- This module interfaces with the linux cgroup virtual filesystem to fetch various basic data.
+-- /Note that this is an experimental iteration of the API, and subject to change./
+module System.Linux.Process.CGroup.VFS(
+         -- * Types
+         CGroup(..), 
+         -- * CGroups
+         allCGroups, 
+         -- * Tasks (Processes)
+         listTasks, 
+         addTask) where
 
    import Control.Monad(guard)
    import System.IO (Handle, IOMode(..), hGetContents, openFile, withFile, hPutStr)
@@ -9,6 +24,7 @@ module System.Linux.Process.CGroup.VFS(CGroup(..), allCGroups, listTasks, addTas
    import Data.Maybe(catMaybes)
    import System.Posix.Types(ProcessID)
 
+   -- | Contains a reference to the system cgroup. Typically this will be a system path in '/sys/fs/cgroups'
    data CGroup = CheckedCGroup FilePath -- checked for existance by `checked` (came from user)
                | SystemCGroup  FilePath -- not checked since we trust ourselves
          deriving (Eq, Show)
@@ -19,11 +35,11 @@ module System.Linux.Process.CGroup.VFS(CGroup(..), allCGroups, listTasks, addTas
    filePathForCGroup (CheckedCGroup g) = g
    filePathForCGroup (SystemCGroup  g) = g
 
-   -- | Writes a string to a file, and appends a newline
+   -- | Writes a string to a file, and appends a newline. 
    writeLine :: FilePath -> String -> IO ()
    writeLine name line = withFile name WriteMode (\h -> hPutStr h line >> hPutStr h "\n")
 
-   -- | Produces a list of cgroups active on the system. Assumes location of mounts
+   -- | Produces a list of cgroups active on the system. Assumes '/proc/mounts' contains mounts on system. 
    allCGroups :: IO [CGroup]
    allCGroups = fmap (map SystemCGroup . catMaybes . map decodeLine . lines) (readFile "/proc/mounts")
        where decodeLine l = case words l of

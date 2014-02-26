@@ -7,7 +7,7 @@ license-file: LICENSE
 copyright: Copyright 2014 Christopher Lord
 maintainer: christopher@lord.ac
 synopsis: Very basic interface to the Linux CGroup Virtual Filesystem
-description: This library is a prototype.
+description: This library is a prototype. I intend it to grow with time, but please consider making contributions and submitting issues.
 category: System
 author: Christopher Lord
 data-dir: ""
