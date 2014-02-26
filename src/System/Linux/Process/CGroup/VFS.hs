@@ -5,8 +5,9 @@ module System.Linux.Process.CGroup.VFS(CGroup(..), allCGroups, listTasks, addTas
    import Control.Monad(guard)
    import System.IO (Handle, IOMode(..), hGetContents, openFile, withFile, hPutStr)
    import System.FilePath.Posix
+   import Data.Monoid (mempty, Monoid(..))
    import Data.Maybe(catMaybes)
-   import System.Posix.Types
+   import System.Posix.Types(ProcessID)
 
    data CGroup = CheckedCGroup FilePath -- checked for existance by `checked` (came from user)
                | SystemCGroup  FilePath -- not checked since we trust ourselves
@@ -41,5 +42,4 @@ module System.Linux.Process.CGroup.VFS(CGroup(..), allCGroups, listTasks, addTas
 
    -- | Adds a PID to a cgroup. If the PID or cgroup does not exist, no action is taken.
    addTask :: CGroup -> ProcessID -> IO ()
-   addTask g p = checked g (\p -> writeLine (p </> "tasks") (show p))
-
+   addTask g p = checked g (\z -> writeLine (z </> "tasks") (show p))
