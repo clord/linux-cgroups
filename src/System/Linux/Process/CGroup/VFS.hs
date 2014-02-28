@@ -40,16 +40,17 @@ module System.Linux.Process.CGroup.VFS(
    writeLine name line = withFile name WriteMode (\h -> hPutStr h line >> hPutStr h "\n")
 
    -- | Produces a list of cgroups active on the system. Assumes '/proc/mounts' contains mounts on system. 
-   allCGroups :: IO [CGroup]
-   allCGroups = fmap (map SystemCGroup . catMaybes . map decodeLine . lines) (readFile "/proc/mounts")
-       where decodeLine l = case words l of
+   allCGroups :: Bool -> IO [CGroup]
+   allCGroups checked = fmap (map CheckedCGroup . catMaybes . map decodeLine . lines) (readFile "/proc/mounts")
+       where checker = if checked then CheckedCGroup else SystemCGroup 
+             decodeLine l = case words l of
                               ("cgroup":b:_) -> Just b
                               _              -> Nothing
 
    -- | Given a CGroup and two monads, will determine whether or not the cgroup exists IFF the cgroup originates from user code, and resolve to one of the two monads.
    checked :: Monoid a => CGroup -> (FilePath -> IO a) -> IO a
    checked   (SystemCGroup  p) m = (m p) -- Trusted
-   checked g@(CheckedCGroup p) m = do allG <- allCGroups -- double-check no funny-business
+   checked g@(CheckedCGroup p) m = do allG <- allCGroups True -- double-check no funny-business
                                       if g `elem` allG then (m p) else (return mempty)
 
    -- | List all PIDs associated with a cgroup. If the cgroup does not exist, an empty list is produced.
