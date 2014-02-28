@@ -17,7 +17,7 @@ module System.Linux.Process.CGroup.VFS(
          listTasks, 
          addTask) where
 
-   import Control.Monad(guard)
+   import Control.Monad(guard,mzero)
    import System.IO (Handle, IOMode(..), hGetContents, openFile, withFile, hPutStr)
    import System.FilePath.Posix
    import Data.Monoid (mempty, Monoid(..))
@@ -51,7 +51,7 @@ module System.Linux.Process.CGroup.VFS(
    checked :: Monoid a => CGroup -> (FilePath -> IO a) -> IO a
    checked   (SystemCGroup  p) m = (m p) -- Trusted
    checked g@(CheckedCGroup p) m = do allG <- allCGroups True -- double-check no funny-business
-                                      if g `elem` allG then (m p) else (return mempty)
+                                      if g `elem` allG then m p else fail "cgroup does not exist"
 
    -- | List all PIDs associated with a cgroup. If the cgroup does not exist, an empty list is produced.
    listTasks :: CGroup -> IO [ProcessID]
